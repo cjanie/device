@@ -11,7 +11,7 @@ class BleDeviceAdapter(private val devices: List<BleDevice>)
     : RecyclerView.Adapter<BleDeviceAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val deviceNameTextView: TextView = itemView.findViewById(R.id.device_name)
+        val deviceAddressTextView: TextView = itemView.findViewById(R.id.device_address)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BleDeviceAdapter.ViewHolder {
@@ -23,8 +23,9 @@ class BleDeviceAdapter(private val devices: List<BleDevice>)
 
     override fun onBindViewHolder(holder: BleDeviceAdapter.ViewHolder, position: Int) {
         val device = devices[position]
-        val textView = holder.deviceNameTextView
-        textView.text = device.name
+        holder.deviceAddressTextView.text = device.address
+        // TODO onClick on itemView -> connect()
+        holder.itemView.setOnClickListener {v -> val state = "onConnect"}
     }
 
     override fun getItemCount(): Int {

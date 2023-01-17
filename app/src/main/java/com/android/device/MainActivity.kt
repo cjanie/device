@@ -1,7 +1,6 @@
 package com.android.device
 
 import android.bluetooth.BluetoothManager
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -9,15 +8,11 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.device.permissions.BleScanRequiredPermissions
-import com.android.device.permissions.PermissionsUtilities
 import com.android.device.scanner.*
-import java.util.jar.Manifest
 
 class MainActivity : AppCompatActivity() {
 
@@ -58,14 +53,62 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    //////////////////// Permissions to scan
+
+    val launcher = this.registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+        ActivityResultCallback {
+            val permissionsResults = it
+            var deniedPermissions = ArrayList<String>()
+
+            this.permissions.forEach {
+                val permission = it
+                val isGranted = permissionsResults.get(permission)
+
+                if(!isGranted!!) {
+
+                    deniedPermissions.add(permission)
+                }
+            }
+
+            if(deniedPermissions.isEmpty()) {
+
+                // Run SCAN action if all permissions are granted
+                this.scan();
+
+            } else {
+
+                // Some permissions have been denied
+                this.showOnDeniedPermissionsMessage(deniedPermissions)
+            }
+        }
+    )
+
+    //////////////////////// SCAN
+
+    private fun scan() {
+
+        try {
+
+            this.bleScanManager.scanBleDevices()
+
+        } catch (e: BluetoothDisabledException) {
+            this.showOnBluetoothDisabledMessage(e.javaClass.name)
+        }
+    }
+
     private fun configureBleScanManager() {
+
         this.btManager = this.getSystemService(BluetoothManager::class.java)
+
         this.bleScanManager = BleScanManager(this.btManager, 5000, scanCallBack =
         BleScanCallBack({
-            val name = it?.device?.address
-            if(name.isNullOrBlank()) return@BleScanCallBack
 
-            val device = BleDevice(name)
+            // Get scan result data to create a BleDevice object
+            val address = it?.device?.address
+            if(address.isNullOrBlank()) return@BleScanCallBack
+
+            val device = BleDevice(address)
             if(!this.foundDevices.contains(device)) {
                 this.foundDevices.add(device)
                 adapter.notifyItemInserted(this.foundDevices.size - 1)
@@ -78,6 +121,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         this.bleScanManager.beforeScanActions.add {
+            // Initialize the found devices list
             this.foundDevices.clear()
             adapter.notifyDataSetChanged()
         }
@@ -88,67 +132,21 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    val launcher = this.registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions(),
-        ActivityResultCallback {
-            val permissionsResults = it
-            var missingPermissions = ArrayList<String>()
 
-            this.permissions.forEach {
-                val permission = it
-                val isGranted = permissionsResults.get(permission)
-                if(!isGranted!!) {
-                    missingPermissions.add(permission)
-                }
-            }
+    ////////////////////////// Show messages
 
-            if(missingPermissions.isEmpty()) {
-                this.configureBleScanManager()
-                try {
-                    this.bleScanManager.scanBleDevices()
-                } catch (e: BluetoothDisabledException) {
-                    this.message.text = e.javaClass.name
-                }
-            } else {
-                var message = "Some permissions were not granted, please grant them and try again: "
-                missingPermissions.forEach {
-                    message += it + " "
-                }
+    private fun showOnDeniedPermissionsMessage(deniedPermissions: List<String>) {
 
-                this.message.text = message
-
-                Toast.makeText(
-                    this,
-                     message,
-                    Toast.LENGTH_LONG).show()
-            }
+        var message = "Some permissions were not granted, please grant them and try again: "
+        deniedPermissions.forEach {
+            message += it + " "
         }
-    )
-/*
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        PermissionsUtilities().dispatchOnRequestPermissionsResult(
-            requestCode,
-            grantResults,
-            onGrantedMap = mapOf(BLE_PERMISSION_REQUEST_CODE to {
-                this.bleScanManager.scanBleDevices()
-            }),
-            onDeniedMap = mapOf(BLE_PERMISSION_REQUEST_CODE to {
-                Toast.makeText(
-                    this,
-                    "Some permissions were not granted, please grant them and try again",
-                    Toast.LENGTH_LONG).show()
-            })
-        )
+
+        this.message.text = message
     }
 
- */
-
-    companion object {
-        private const val BLE_PERMISSION_REQUEST_CODE = 1
+    private fun showOnBluetoothDisabledMessage(blueToothDisabledMessage: String) {
+        this.message.text = blueToothDisabledMessage
     }
+
 }

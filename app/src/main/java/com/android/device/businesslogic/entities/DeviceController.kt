@@ -1,24 +1,23 @@
 package com.android.device.businesslogic.entities
 
+import com.android.device.businesslogic.NetworkConstants
+import com.android.device.businesslogic.exceptions.BleConnectionException
+
+// To connect one device from the scan results,
+// Use a controller that encapsulate the device
+
 class DeviceController(val device: Device) {
 
-    val DEFAULT_NETWORK_NAME = "unpaired"
-    val BLE_NETWORK_NAME = "bleNetworkName"
+    private var connection = false
 
-    var meshName = "";
+    fun connect() {
+        this.connection = true
+    }
 
-    fun onConnect() {
-        if(this.device.isThirdParty) {
-            this.meshName = DEFAULT_NETWORK_NAME
-        } else {
-            this.meshName = BLE_NETWORK_NAME
-            this.device.friendlyName = BLE_NETWORK_NAME
+    fun getNetworkUserName(): NetworkConstants {
+        if(this.connection) {
+            return NetworkConstants.NETWORK_USER_NAME
         }
+        throw BleConnectionException()
     }
-
-    fun onDisconnect() {
-        this.meshName = ""
-        this.device.friendlyName = DEFAULT_NETWORK_NAME
-    }
-
 }

@@ -52,11 +52,7 @@ class BleScanManager(
             // starts scanning
             this.scanning = true
 
-            //try {
-                this.startScan()
-            /*} catch (e: BluetoothDisabledException) {
-                throw e
-            }*/
+            this.startScan()
         }
     }
 
