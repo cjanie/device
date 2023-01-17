@@ -1,5 +1,7 @@
 package com.android.device
 
+import android.annotation.SuppressLint
+import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -14,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.device.permissions.BleScanRequiredPermissions
 import com.android.device.scanner.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
 
     // https://medium.com/geekculture/how-to-create-a-bluetooth-le-scanner-for-android-8d27f63d4de9
 
@@ -37,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         // RecyclerView handling
         val rvFoundDevices = this.findViewById<View>(R.id.rv_found_devices) as RecyclerView
         this.foundDevices = BleDevice.createBleDevicesList()
-        this.adapter = BleDeviceAdapter(this.foundDevices)
+        this.adapter = BleDeviceAdapter(this.foundDevices, this)
         rvFoundDevices.adapter = this.adapter
         rvFoundDevices.layoutManager = LinearLayoutManager(this)
 
@@ -132,7 +134,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
     ////////////////////////// Show messages
 
     private fun showOnDeniedPermissionsMessage(deniedPermissions: List<String>) {
@@ -148,5 +149,19 @@ class MainActivity : AppCompatActivity() {
     private fun showOnBluetoothDisabledMessage(blueToothDisabledMessage: String) {
         this.message.text = blueToothDisabledMessage
     }
+
+    //////////////// impl Connect interface
+
+
+
+    @SuppressLint("MissingPermission")
+    override fun connect(address: String) {
+        val btAdapter = this.btManager.adapter
+        val btDevice = btAdapter.getRemoteDevice(address)
+        // Connect to GATT Server hosted by this device
+        btDevice.connectGatt(this, false, ConnectCallBack())
+    }
+
+
 
 }

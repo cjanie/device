@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.android.device.R
 
-class BleDeviceAdapter(private val devices: List<BleDevice>)
+class BleDeviceAdapter(private val devices: List<BleDevice>, private val connectInterface: Connect)
     : RecyclerView.Adapter<BleDeviceAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -23,12 +23,20 @@ class BleDeviceAdapter(private val devices: List<BleDevice>)
 
     override fun onBindViewHolder(holder: BleDeviceAdapter.ViewHolder, position: Int) {
         val device = devices[position]
+
         holder.deviceAddressTextView.text = device.address
-        // TODO onClick on itemView -> connect()
-        holder.itemView.setOnClickListener {v -> val state = "onConnect"}
+
+        // OnClick on itemView -> connect()
+        holder.itemView.setOnClickListener {v ->
+                this.connectInterface.connect(device.address)
+        }
     }
 
     override fun getItemCount(): Int {
         return devices.size
+    }
+
+    interface Connect {
+        fun connect(address: String)
     }
 }
