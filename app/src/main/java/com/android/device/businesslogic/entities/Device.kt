@@ -1,9 +1,7 @@
 package com.android.device.businesslogic.entities
 
-class Device {
+class Device() {
 
-    var friendlyName = "EGLO Zigbee"
-
-    var isThirdParty = false
+    var name: String? = null
 
 }

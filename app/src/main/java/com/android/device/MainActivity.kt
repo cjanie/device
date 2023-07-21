@@ -22,7 +22,6 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
 
     private lateinit var btManager: BluetoothManager
     private lateinit var bleScanManager: BleScanManager
-
     private lateinit var foundDevices: MutableList<BleDevice>
     private lateinit var adapter: BleDeviceAdapter
 
@@ -105,16 +104,21 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
 
         this.bleScanManager = BleScanManager(this.btManager, 5000, scanCallBack =
         BleScanCallBack({
+            if (it != null) {
 
-            // Get scan result data to create a BleDevice object
-            val address = it?.device?.address
-            if(address.isNullOrBlank()) return@BleScanCallBack
+                // CREATE BleDevice for the adapter
+                // Extract data from scan result to create a custom BleDevice object
+                    // that represents the device viewed by the scan
+                val bleDevice = GetDeviceFromScanResult().createBleDeviceFromResult(it)
 
-            val device = BleDevice(address)
-            if(!this.foundDevices.contains(device)) {
-                this.foundDevices.add(device)
-                adapter.notifyItemInserted(this.foundDevices.size - 1)
+                // add it to the list of devices that the scanner has found
+                // and notify adapter
+                if(!this.foundDevices.contains(bleDevice)) {
+                    this.foundDevices.add(bleDevice)
+                    adapter.notifyItemInserted(this.foundDevices.size - 1)
+                }
             }
+
         }))
 
         // Adding the actions the manager must do before and after scanning
@@ -123,7 +127,8 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
         }
 
         this.bleScanManager.beforeScanActions.add {
-            // Initialize the found devices list
+            // Initialize the list of devices found by the scanner
+            // and notify adapter
             this.foundDevices.clear()
             adapter.notifyDataSetChanged()
         }

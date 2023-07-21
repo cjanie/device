@@ -1,9 +1,13 @@
 package com.android.device.scanner
 
+import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import com.android.device.businesslogic.entities.Device
 
 class BleScanCallBack(
+
     private val onScanResultAction: (ScanResult?) -> Unit = {},
     private val onBatchScanResultAction: (MutableList<ScanResult>?) -> Unit = {},
     private val onScanFailedAction: (Int) -> Unit = {}
@@ -23,5 +27,6 @@ class BleScanCallBack(
         super.onScanFailed(errorCode)
         this.onScanFailedAction(errorCode)
     }
+
 
 }

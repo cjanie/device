@@ -1,6 +1,6 @@
 package com.android.device
 
-import com.android.device.businesslogic.NetworkConstants
+import com.android.device.businesslogic.NetworkEnum
 import com.android.device.businesslogic.entities.Device
 import com.android.device.businesslogic.entities.DeviceController
 import org.junit.Assert
@@ -12,6 +12,6 @@ class ConnectDeviceTest {
     fun connectShouldSetTheNetworkUserName() {
         val deviceController = DeviceController(Device())
         deviceController.connect()
-        Assert.assertEquals(NetworkConstants.NETWORK_USER_NAME, deviceController.getNetworkUserName())
+        Assert.assertEquals(NetworkEnum.USER_NETWORK_NAME, deviceController.getUserNetworkName())
     }
 }

@@ -2,9 +2,9 @@ package com.android.device.businesslogic
 
 import com.android.device.businesslogic.entities.Device
 import com.android.device.businesslogic.entities.DeviceController
-import com.android.device.businesslogic.entities.ScannerGateway
+import com.android.device.businesslogic.gateways.ScannerGateway
 
-class InMemoryScannerGatewayImpl : ScannerGateway  {
+class InMemoryScannerGatewayImpl : ScannerGateway {
 
     override fun getScanResult(): List<DeviceController> {
         val deviceControllers = ArrayList<DeviceController>()
