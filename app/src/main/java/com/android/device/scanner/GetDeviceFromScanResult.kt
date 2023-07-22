@@ -28,8 +28,13 @@ class GetDeviceFromScanResult {
         val isConnectable = this.isConnectableFromResult(result)
         val name = this.getDeviceNameFromResult(result)
 
-        val bleDevice = BleDevice(address, isConnectable, name)
-        return bleDevice
+        if(isConnectable) {
+            val btDevice = this.getBluetoothDeviceFromResult(result)
+            return ConnectableBleDevice(
+                address, isConnectable, name, btDevice)
+        }
+
+        return BleDevice(address, isConnectable, name)
 
     }
 
