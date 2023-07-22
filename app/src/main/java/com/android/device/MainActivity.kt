@@ -2,7 +2,6 @@ package com.android.device
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothManager
@@ -13,14 +12,13 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.android.device.businesslogic.gateways.FakeListOfBleDevices
 import com.android.device.permissions.BleScanRequiredPermissions
-import com.android.device.permissions.PermissionsUtilities
 import com.android.device.scanner.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -55,6 +53,8 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
     // Permissions
     private val permissions = BleScanRequiredPermissions().permissions
 
+    private lateinit var device: ConnectableBleDevice
+
     //////////////////////////
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
             // Checks if the required permissions are granted and starts the scan if so,
             // otherwise it requests them
             this.launcher.launch(permissions)
-            this.requestPermissionLauncher.launch(Manifest.permission.BLUETOOTH)
+            this.requestBluetoothPermissionLauncher.launch(Manifest.permission.BLUETOOTH)
         }
 
     }
@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
 // system permissions dialog. Save the return value, an instance of
 // ActivityResultLauncher. You can use either a val, as shown in this snippet,
 // or a lateinit var in your onAttach() or onCreate() method.
-    val requestPermissionLauncher =
+    val requestBluetoothPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
@@ -234,19 +234,53 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            return
+            requestConnectionPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
         }
 
+
+    }
+
+
+    val requestConnectionPermissionLauncher = this.registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            this.connectGatt()
+        } else {
+            Toast.makeText(this@MainActivity, "nothing", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun connectGatt() {
         val gattCallBack = object : BluetoothGattCallback() {
-            override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+            override fun onConnectionStateChange(
+                gatt: BluetoothGatt?,
+                status: Int,
+                newState: Int
+            ) {
 
                 val response = "connection status: " + status + ", new state: " + newState
                 Toast.makeText(this@MainActivity, response, Toast.LENGTH_LONG).show()
             }
         }
 
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            Toast.makeText(this@MainActivity, "nothing", Toast.LENGTH_SHORT).show()
+            return
+        }
         device.btDevice.connectGatt(this, true, gattCallBack)
-        Toast.makeText(this@MainActivity, "nothing", Toast.LENGTH_SHORT).show()
+
     }
 
 
