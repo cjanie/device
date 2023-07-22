@@ -2,8 +2,11 @@ package com.android.device
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothManager
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -12,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.device.businesslogic.gateways.FakeListOfBleDevices
@@ -216,16 +220,34 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
 
     //////////////// impl Connect interface
 
+    override fun connect(device: ConnectableBleDevice) {
 
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
 
-    @SuppressLint("MissingPermission")
-    override fun connect(address: String) {
-        val btAdapter = this.btManager.adapter
-        val btDevice = btAdapter.getRemoteDevice(address)
-        // Connect to GATT Server hosted by this device
-        btDevice.connectGatt(this, false, ConnectCallBack())
+        val gattCallBack = object : BluetoothGattCallback() {
+            override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+
+                val response = "connection status: " + status + ", new state: " + newState
+                Toast.makeText(this@MainActivity, response, Toast.LENGTH_LONG).show()
+            }
+        }
+
+        device.btDevice.connectGatt(this, true, gattCallBack)
+        Toast.makeText(this@MainActivity, "nothing", Toast.LENGTH_SHORT).show()
     }
-
 
 
 }

@@ -2,6 +2,7 @@ package com.android.device.scanner
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCallback
 import android.content.pm.PackageManager
 import android.view.LayoutInflater
@@ -38,13 +39,13 @@ class BleDeviceAdapter(private val devices: List<BleDevice>, private val connect
 
         if(device.isConnectable) {
             val v = holder.itemView
-            v.setBackgroundColor(v.resources.getColor(R.color.purple_200, v.resources.newTheme()))
+            v.setBackgroundColor(v.resources.getColor(R.color.teal_200, v.resources.newTheme()))
+            v.setOnClickListener {v ->
+                this.connectInterface.connect(device as ConnectableBleDevice)
+                v.alpha = 0.5F
+            }
         }
 
-        // OnClick on itemView -> connect()
-        holder.itemView.setOnClickListener {v ->
-                this.connectInterface.connect(device.address)
-        }
     }
 
     override fun getItemCount(): Int {
@@ -52,6 +53,6 @@ class BleDeviceAdapter(private val devices: List<BleDevice>, private val connect
     }
 
     interface Connect {
-        fun connect(address: String)
+        fun connect(bleDevice: ConnectableBleDevice)
     }
 }
