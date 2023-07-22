@@ -8,9 +8,27 @@
         android:id="@+id/device_address"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="device_name"
+        android:text="device_address"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/device_isConnectable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="device is Connectable"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/device_address" />
+
+    <TextView
+        android:id="@+id/device_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="device_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/device_isConnectable" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

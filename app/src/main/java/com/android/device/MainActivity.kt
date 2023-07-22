@@ -1,5 +1,6 @@
 package com.android.device
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothManager
@@ -13,43 +14,66 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.android.device.businesslogic.gateways.FakeListOfBleDevices
 import com.android.device.permissions.BleScanRequiredPermissions
+import com.android.device.permissions.PermissionsUtilities
 import com.android.device.scanner.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
 
     // https://medium.com/geekculture/how-to-create-a-bluetooth-le-scanner-for-android-8d27f63d4de9
 
+    // Bluetooth stack
     private lateinit var btManager: BluetoothManager
     private lateinit var bleScanManager: BleScanManager
+
+    // Data in a custom BleDevice to represent a device found by the scanner
     private lateinit var foundDevices: MutableList<BleDevice>
+
+    // UI adapter for list
     private lateinit var adapter: BleDeviceAdapter
 
+    // Views
     private lateinit var btnStartScan: Button
 
     private lateinit var message: TextView
 
+    // Permissions
     private val permissions = BleScanRequiredPermissions().permissions
+
+    //////////////////////////
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // RecyclerView handling
+        // find the RecyclerView for the list
         val rvFoundDevices = this.findViewById<View>(R.id.rv_found_devices) as RecyclerView
+
+        // initialize the list of devices (empty list)
         this.foundDevices = BleDevice.createBleDevicesList()
+
+        // initialize the adapter with the empty list
         this.adapter = BleDeviceAdapter(this.foundDevices, this)
+
+        // set the adapter to the recycler view
         rvFoundDevices.adapter = this.adapter
         rvFoundDevices.layoutManager = LinearLayoutManager(this)
 
+        // init views
         this.btnStartScan = this.findViewById(R.id.button_start_scan)
         this.message = this.findViewById(R.id.textView_message)
 
-        this.configureBleScanManager()
+        // init bluetooth stack
+        this.btManager = this.getSystemService(BluetoothManager::class.java)
 
         this.btnStartScan.setOnClickListener {
-            // Checks if the required permissions are granted and starts the scan if so, otherwise it requests them
-            this.launcher.launch(permissions)
+            // Checks if the required permissions are granted and starts the scan if so,
+            // otherwise it requests them
+            //this.launcher.launch(permissions)
+            this.requestPermissionLauncher.launch(Manifest.permission.BLUETOOTH)
         }
 
     }
@@ -75,15 +99,45 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
             if(deniedPermissions.isEmpty()) {
 
                 // Run SCAN action if all permissions are granted
-                this.scan();
+                    this.configureBleScanManager(this.btManager)
+                this.scan()
 
             } else {
 
                 // Some permissions have been denied
                 this.showOnDeniedPermissionsMessage(deniedPermissions)
+
             }
         }
     )
+
+    // Blootooth permission
+    // Register the permissions callback, which handles the user's response to the
+// system permissions dialog. Save the return value, an instance of
+// ActivityResultLauncher. You can use either a val, as shown in this snippet,
+// or a lateinit var in your onAttach() or onCreate() method.
+    val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission is granted. Continue the action or workflow in your
+                // app.
+
+                // configure scan feature
+                // implements the scan call back showing the devices that the scan has found
+                this.configureBleScanManager(this.btManager)
+                this.scan()
+            } else {
+                // Explain to the user that the feature is unavailable because the
+                // feature requires a permission that the user has denied. At the
+                // same time, respect the user's decision. Don't link to system
+                // settings in an effort to convince the user to change their
+                // decision.
+                this.showOnDeniedPermissionsMessage(Arrays.asList("permission denied"))
+
+            }
+        }
 
     //////////////////////// SCAN
 
@@ -98,9 +152,7 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
         }
     }
 
-    private fun configureBleScanManager() {
-
-        this.btManager = this.getSystemService(BluetoothManager::class.java)
+    private fun configureBleScanManager(bluetoothManager: BluetoothManager) {
 
         this.bleScanManager = BleScanManager(this.btManager, 5000, scanCallBack =
         BleScanCallBack({
@@ -136,7 +188,6 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
         this.bleScanManager.afterScanActions.add {
             this.btnStartScan.isEnabled = true
         }
-
     }
 
     ////////////////////////// Show messages

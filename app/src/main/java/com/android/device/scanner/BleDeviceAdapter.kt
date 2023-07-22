@@ -12,6 +12,8 @@ class BleDeviceAdapter(private val devices: List<BleDevice>, private val connect
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val deviceAddressTextView: TextView = itemView.findViewById(R.id.device_address)
+        val deviceIsConnectableTextView: TextView = itemView.findViewById(R.id.device_isConnectable)
+        val deviceNameTextView: TextView = itemView.findViewById(R.id.device_name)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BleDeviceAdapter.ViewHolder {
@@ -25,6 +27,8 @@ class BleDeviceAdapter(private val devices: List<BleDevice>, private val connect
         val device = devices[position]
 
         holder.deviceAddressTextView.text = device.address
+        holder.deviceIsConnectableTextView.text = "is connectable " + device.isConnectable.toString()
+        holder.deviceNameTextView.text = device.name
 
         // OnClick on itemView -> connect()
         holder.itemView.setOnClickListener {v ->
