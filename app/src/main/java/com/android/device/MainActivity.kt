@@ -21,6 +21,14 @@ import com.android.device.scanner.*
 import java.util.*
 import kotlin.collections.ArrayList
 
+/**
+ * As a user,
+ * I want to see all the devices around me
+ * and to know if they are connectable
+ * + address, name?
+ * data are provided by the ScanResult
+ * */
+
 class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
 
     // https://medium.com/geekculture/how-to-create-a-bluetooth-le-scanner-for-android-8d27f63d4de9
@@ -72,7 +80,7 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
         this.btnStartScan.setOnClickListener {
             // Checks if the required permissions are granted and starts the scan if so,
             // otherwise it requests them
-            //this.launcher.launch(permissions)
+            this.launcher.launch(permissions)
             this.requestPermissionLauncher.launch(Manifest.permission.BLUETOOTH)
         }
 
@@ -99,8 +107,8 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
             if(deniedPermissions.isEmpty()) {
 
                 // Run SCAN action if all permissions are granted
-                    this.configureBleScanManager(this.btManager)
-                this.scan()
+                    //this.configureBleScanManager(this.btManager)
+                //this.scan()
 
             } else {
 
