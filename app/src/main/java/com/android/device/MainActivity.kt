@@ -84,8 +84,7 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
         this.btnStartScan.setOnClickListener {
             // Checks if the required permissions are granted and starts the scan if so,
             // otherwise it requests them
-            this.launcher.launch(permissions)
-            this.requestBluetoothPermissionLauncher.launch(Manifest.permission.BLUETOOTH)
+            this.launcher.launch(this.permissions)
         }
 
     }
@@ -111,8 +110,8 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
             if(deniedPermissions.isEmpty()) {
 
                 // Run SCAN action if all permissions are granted
-                    //this.configureBleScanManager(this.btManager)
-                //this.scan()
+                    this.configureBleScanManager(this.btManager)
+                this.scan()
 
             } else {
 
@@ -122,34 +121,6 @@ class MainActivity : AppCompatActivity(), BleDeviceAdapter.Connect {
             }
         }
     )
-
-    // Blootooth permission
-    // Register the permissions callback, which handles the user's response to the
-// system permissions dialog. Save the return value, an instance of
-// ActivityResultLauncher. You can use either a val, as shown in this snippet,
-// or a lateinit var in your onAttach() or onCreate() method.
-    val requestBluetoothPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                // Permission is granted. Continue the action or workflow in your
-                // app.
-
-                // configure scan feature
-                // implements the scan call back showing the devices that the scan has found
-                this.configureBleScanManager(this.btManager)
-                this.scan()
-            } else {
-                // Explain to the user that the feature is unavailable because the
-                // feature requires a permission that the user has denied. At the
-                // same time, respect the user's decision. Don't link to system
-                // settings in an effort to convince the user to change their
-                // decision.
-                this.showOnDeniedPermissionsMessage(Arrays.asList("permission denied"))
-
-            }
-        }
 
     //////////////////////// SCAN
 
